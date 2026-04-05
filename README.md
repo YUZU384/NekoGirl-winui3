@@ -22,7 +22,9 @@
 
 ## 🔍 界面预览
 
+![](https://raw.githubusercontent.com/YUZU384/NekoGirl-winui3/refs/heads/main/pic/ecd04990-0db8-47cd-9fcc-4a9895ae1958.png?token=GHSAT0AAAAAADXZ6EJ32EQ35CUTYXXBVDXM2OSLIJQ "默认")
 
+![](https://raw.githubusercontent.com/YUZU384/NekoGirl-winui3/refs/heads/main/pic/c12d7e05-7612-4604-8e64-2377d52657ee.png?token=GHSAT0AAAAAADXZ6EJ3B2AW4QNGR4NSND3U2OSLKIQ "1080p")
 
 ## 📖 项目简介
 
@@ -125,7 +127,7 @@ NekoGirl-winui3/
 
 ## 📜 开源协议
 
-本项目采用 [MIT协议](..\LICENSE) 开源。
+本项目采用 [MIT协议]([NekoGirl-winui3/LICENSE at main · YUZU384/NekoGirl-winui3](https://github.com/YUZU384/NekoGirl-winui3/blob/main/LICENSE)) 开源。
 
 ## 🙏 致谢
 
