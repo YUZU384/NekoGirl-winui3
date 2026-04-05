@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="NekoGirl_winui3.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NekoGirl_winui3"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Background="{StaticResource NekoBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Grid x:Name="TitleBarGrid"
+              Grid.Row="0" 
+              Background="{StaticResource NekoPinkBrush}"
+              Height="48"
+              Padding="12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- 左侧图标和标题 -->
+            <StackPanel Grid.Column="0" 
+                        Orientation="Horizontal" 
+                        Spacing="10"
+                        VerticalAlignment="Center">
+                <Image Source="Assets/Neko64x64.ico" 
+                       Width="28" 
+                       Height="28"/>
+                <TextBlock Text="NekoGirl-猫娘下载器，随机获取猫娘"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            
+            <!-- 右侧留空给系统按钮 -->
+        </Grid>
+
+        <!-- 主内容区 -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="270"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 图片显示区 -->
+            <Border Grid.Column="0"
+                    Background="White"
+                    CornerRadius="16"
+                    Padding="16"
+                    Margin="0,0,20,0"
+                    Shadow="{StaticResource CardShadow}">
+                <Grid>
+                    <Image x:Name="MainImage"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <ScaleTransform x:Name="ImageScaleTransform" ScaleX="1" ScaleY="1"/>
+                        </Image.RenderTransform>
+                        <Image.Resources>
+                            <Storyboard x:Name="ImageShowStoryboard">
+                                <DoubleAnimation Storyboard.TargetName="ImageScaleTransform"
+                                                 Storyboard.TargetProperty="ScaleX"
+                                                 From="0.9" To="1"
+                                                 Duration="0:0:0.3">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetName="ImageScaleTransform"
+                                                 Storyboard.TargetProperty="ScaleY"
+                                                 From="0.9" To="1"
+                                                 Duration="0:0:0.3">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetName="MainImage"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 From="0" To="1"
+                                                 Duration="0:0:0.25"/>
+                            </Storyboard>
+                        </Image.Resources>
+                    </Image>
+                    
+                    <ProgressRing x:Name="LoadingRing"
+                                  Width="60"
+                                  Height="60"
+                                  Foreground="{StaticResource NekoPinkBrush}"
+                                  Visibility="Collapsed"
+                                  IsActive="True"/>
+                    
+                    <TextBlock x:Name="PlaceholderText"
+                               Text="点击「下一只」开始浏览喵~&#x0A;或使用键盘 ← → 方向键"
+                               FontSize="16"
+                               Foreground="Gray"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               LineHeight="24"/>
+                </Grid>
+            </Border>
+
+            <!-- 右侧控制面板 -->
+            <StackPanel Grid.Column="1" Spacing="16">
+                <!-- 画师信息卡片 -->
+                <Border Background="White"
+                        CornerRadius="16"
+                        Padding="20"
+                        Shadow="{StaticResource CardShadow}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="画师信息"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource NekoPinkDarkBrush}"/>
+                        
+                        <TextBlock x:Name="ArtistText"
+                                   Text="暂无信息"
+                                   FontSize="14"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"/>
+                        
+                        <HyperlinkButton x:Name="ArtistLink"
+                                         Content="访问画师主页"
+                                         NavigateUri=""
+                                         Visibility="Collapsed"
+                                         Foreground="{StaticResource NekoPinkBrush}"
+                                         FontSize="14"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 操作按钮区 -->
+                <Border Background="White"
+                        CornerRadius="16"
+                        Padding="20"
+                        Shadow="{StaticResource CardShadow}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="浏览控制"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource NekoPinkDarkBrush}"
+                                   Margin="0,0,0,8"/>
+                        
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button x:Name="PrevButton"
+                                    Grid.Column="0"
+                                    Click="PrevButton_Click"
+                                    IsEnabled="False"
+                                    Style="{StaticResource NekoButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    ToolTipService.ToolTip="上一张 (← 方向键)">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE72B;" FontSize="14"/>
+                                    <TextBlock Text="上一只"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button x:Name="NextButton"
+                                    Grid.Column="1"
+                                    Click="NextButton_Click"
+                                    Style="{StaticResource NekoButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    ToolTipService.ToolTip="下一张 (→ 方向键或空格)">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="下一只"/>
+                                    <FontIcon Glyph="&#xE72A;" FontSize="14"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- 键盘快捷键提示 -->
+                        <TextBlock Text="快捷键: ← → 方向键 或 空格键"
+                                   FontSize="11"
+                                   Foreground="Gray"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 保存操作区 -->
+                <Border Background="White"
+                        CornerRadius="16"
+                        Padding="20"
+                        Shadow="{StaticResource CardShadow}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="保存管理"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource NekoPinkDarkBrush}"
+                                   Margin="0,0,0,8"/>
+                        
+                        <Button x:Name="SelectFolderButton"
+                                Click="SelectFolderButton_Click"
+                                Style="{StaticResource SelectFolderButtonStyle}"
+                                HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8B7;" FontSize="16"/>
+                                <TextBlock Text="选择保存目录" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <TextBlock x:Name="SavePathText"
+                                   Text=""
+                                   FontSize="12"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   MaxLines="2"
+                                   TextTrimming="CharacterEllipsis"/>
+                        
+                        <Button x:Name="SaveButton"
+                                Click="SaveButton_Click"
+                                IsEnabled="False"
+                                Style="{StaticResource SaveButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                ToolTipService.ToolTip="保存图片 (Ctrl+S)">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE74E;" FontSize="16"/>
+                                <TextBlock Text="保存图片" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button x:Name="OpenFolderButton"
+                                Click="OpenFolderButton_Click"
+                                Style="{StaticResource OpenFolderButtonStyle}"
+                                HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8DA;" FontSize="16"/>
+                                <TextBlock Text="打开保存目录" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <!-- 版权信息 -->
+                        <TextBlock FontSize="12"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   Margin="0,8,0,0"
+                                   LineHeight="18">
+                            <Run Text="数据来源：nekos.best API"/>
+                            <LineBreak/>
+                            <Run Text="图片仅供个人欣赏使用"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 状态提示 -->
+                <Border x:Name="StatusBorder"
+                        Background="{StaticResource NekoPinkLightBrush}"
+                        CornerRadius="12"
+                        Padding="16"
+                        Visibility="Collapsed"
+                        RenderTransformOrigin="0.5,0.5"
+                        Opacity="0"
+                        Shadow="{StaticResource CardShadow}">
+                    <Border.RenderTransform>
+                        <TranslateTransform x:Name="StatusTransform" X="0" Y="20"/>
+                    </Border.RenderTransform>
+                    <Border.Resources>
+                        <Storyboard x:Name="StatusShowStoryboard">
+                            <DoubleAnimation Storyboard.TargetName="StatusTransform"
+                                             Storyboard.TargetProperty="Y"
+                                             From="20" To="0"
+                                             Duration="0:0:0.3">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="StatusBorder"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="0" To="1"
+                                             Duration="0:0:0.2"/>
+                        </Storyboard>
+                        <Storyboard x:Name="StatusHideStoryboard"
+                                    Completed="StatusHideStoryboard_Completed">
+                            <DoubleAnimation Storyboard.TargetName="StatusTransform"
+                                             Storyboard.TargetProperty="Y"
+                                             From="0" To="-20"
+                                             Duration="0:0:0.25">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseIn"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="StatusBorder"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="1" To="0"
+                                             Duration="0:0:0.25"/>
+                        </Storyboard>
+                    </Border.Resources>
+                    <TextBlock x:Name="StatusText"
+                               Text=""
+                               FontSize="13"
+                               Foreground="{StaticResource NekoPinkDarkBrush}"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"/>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

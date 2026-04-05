@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "NekoGirl-winui3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "NekoGirl-winui3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
