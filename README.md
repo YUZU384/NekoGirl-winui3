@@ -1,7 +1,7 @@
 # NekoGirl - 猫娘图片浏览器
 
 <p align="center">
-  <img src="NekoGirl-winui3/Assets/Neko150x150Logo.png" alt="NekoGirl Logo" width="120">
+  <img src="NekoGirl-winui3/Assets/Neko_256x256.png" alt="NekoGirl Logo" width="128">
 </p>
 
 <p align="center">
@@ -9,22 +9,22 @@
 </p>
 
 <p align="center">
-  <a href="界面预览">界面预览</a> •
-  <a href="#功能特性">功能特性</a> •
-  <a href="#系统要求">系统要求</a> •
-  <a href="#安装与使用">安装与使用</a> •
-  <a href="#键盘快捷键">键盘快捷键</a> •
-  <a href="#技术栈">技术栈</a> •
-  <a href="#开源协议">开源协议</a>
+  <a href="#-界面预览">界面预览</a> •
+  <a href="#-功能特性">功能特性</a> •
+  <a href="#-系统要求">系统要求</a> •
+  <a href="#-安装与使用">安装与使用</a> •
+  <a href="#️-键盘快捷键">键盘快捷键</a> •
+  <a href="#️-技术栈">技术栈</a> •
+  <a href="#-开源协议">开源协议</a>
 </p>
 
 ---
 
 ## 🔍 界面预览
 
-![](https://raw.githubusercontent.com/YUZU384/NekoGirl-winui3/refs/heads/main/pic/ecd04990-0db8-47cd-9fcc-4a9895ae1958.png?token=GHSAT0AAAAAADXZ6EJ32EQ35CUTYXXBVDXM2OSLIJQ "默认")
+![](pic/6d5915fa-c147-4bc2-82e7-f7dc2d438c38.png "默认")
 
-![](https://raw.githubusercontent.com/YUZU384/NekoGirl-winui3/refs/heads/main/pic/c12d7e05-7612-4604-8e64-2377d52657ee.png?token=GHSAT0AAAAAADXZ6EJ3B2AW4QNGR4NSND3U2OSLKIQ "1080p")
+![](pic/c12d7e05-7612-4604-8e64-2377d52657ee.png "1080p")
 
 ## 📖 项目简介
 
