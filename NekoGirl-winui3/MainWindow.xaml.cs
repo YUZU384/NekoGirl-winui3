@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using NekoGirl_winui3.Services;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
@@ -56,7 +57,7 @@ public sealed partial class MainWindow : Window
         if (_appWindow == null) return;
 
         // 设置窗口大小
-        SetWindowSize(704, 747);
+        SetWindowSize(714, 757);
 
         // 设置窗口居中
         CenterWindow();
@@ -106,7 +107,7 @@ public sealed partial class MainWindow : Window
             if (File.Exists(_configPath))
             {
                 var json = File.ReadAllText(_configPath);
-                var config = JsonSerializer.Deserialize<AppConfig>(json);
+                var config = JsonSerializer.Deserialize(json, AppConfigContext.Default.AppConfig);
                 if (config != null && !string.IsNullOrEmpty(config.SaveDirectory) && Directory.Exists(config.SaveDirectory))
                 {
                     _saveDirectory = config.SaveDirectory;
@@ -141,7 +142,7 @@ public sealed partial class MainWindow : Window
             }
 
             var config = new AppConfig { SaveDirectory = _saveDirectory };
-            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(config, AppConfigContext.Default.AppConfig);
             File.WriteAllText(_configPath, json);
         }
         catch (Exception ex)
@@ -159,8 +160,8 @@ public sealed partial class MainWindow : Window
     {
         if (_appWindow?.Presenter is OverlappedPresenter presenter)
         {
-            presenter.PreferredMinimumWidth = 704;
-            presenter.PreferredMinimumHeight = 747;
+            presenter.PreferredMinimumWidth = 714;
+            presenter.PreferredMinimumHeight = 757;
         }
     }
 
@@ -473,4 +474,11 @@ public sealed partial class MainWindow : Window
 public class AppConfig
 {
     public string SaveDirectory { get; set; } = "";
+}
+
+// JSON Source Generation Context，支持裁剪
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(AppConfig))]
+internal partial class AppConfigContext : JsonSerializerContext
+{
 }

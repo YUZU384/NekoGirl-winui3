@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -7,32 +7,63 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
-    <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\icon_source_original.scale-400.png" />
+    <None Remove="Assets\Neko150x150Logo.scale-400.png" />
+    <None Remove="Assets\Neko310x310Logo.scale-400.png" />
+    <None Remove="Assets\Neko310x310Logo.targetsize-256.png" />
+    <None Remove="Assets\Neko71x71Logo.scale-400.png" />
+    <None Remove="Assets\Neko_1240x1240.png" />
+    <None Remove="Assets\Neko_1240x1240.scale-400.png" />
+    <None Remove="Assets\Neko_1240x600.png" />
+    <None Remove="Assets\Neko_1240x600.scale-200.png" />
+    <None Remove="Assets\Neko_1240x600.scale-400.png" />
+    <None Remove="Assets\Neko_200x200.scale-400.png" />
+    <None Remove="Assets\Neko_256x256.png" />
+    <None Remove="Assets\Neko_256x256.targetsize-256.png" />
+    <None Remove="Assets\Neko_284x284.png" />
+    <None Remove="Assets\Neko_284x284.scale-400.png" />
+    <None Remove="Assets\Neko_600x600.png" />
+    <None Remove="Assets\Neko_600x600.scale-400.png" />
+    <None Remove="Assets\Neko_96x96.scale-400.png" />
+  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Neko64x64.ico" />
-    <Content Include="Assets\Neko44x44Logo.png" />
-    <Content Include="Assets\Neko71x71Logo.png" />
-    <Content Include="Assets\Neko150x150Logo.png" />
-	<Content Include="Assets\Neko310x310Logo.png" />
+    <Content Include="Assets\Neko_256x256.ico" />
+    <Content Include="Assets\Neko_256x256.png" />
+    <Content Include="Assets\Neko_256x256.targetsize-256.png" />
+    <Content Include="Assets\Neko_96x96.png" />
+    <Content Include="Assets\Neko_96x96.scale-400.png" />
+    <Content Include="Assets\Neko_200x200.png" />
+    <Content Include="Assets\Neko_200x200.scale-400.png" />
+    <Content Include="Assets\Neko_284x284.png" />
+    <Content Include="Assets\Neko_284x284.scale-400.png" />
+    <Content Include="Assets\Neko_600x600.png" />
+    <Content Include="Assets\Neko_600x600.scale-400.png" />
+    <Content Include="Assets\Neko_1240x600.png" />
+    <Content Include="Assets\Neko_1240x600.scale-200.png" />
+    <Content Include="Assets\Neko_1240x600.scale-400.png" />
+    <Content Include="Assets\Neko_1240x1240.png" />
+    <Content Include="Assets\Neko_1240x1240.scale-400.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!--
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
-  -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
@@ -41,23 +72,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
   </ItemGroup>
 
-  <!--
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if
-    the Windows App SDK Nuget package has not yet been restored.
-  -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
-
-  <!-- Publish Properties -->
-  <PropertyGroup>
-    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <UseWindowsForms>False</UseWindowsForms>
-    <UseWPF>False</UseWPF>
-    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
   </PropertyGroup>
 </Project>

@@ -5,8 +5,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <ActiveDebugProfile>NekoGirl-winui3 (Package)</ActiveDebugProfile>
-    <_LastSelectedProfileId>E:\code\.ing\NekoGirl-winui3\NekoGirl-winui3\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
+    <_LastSelectedProfileId>E:\git\NekoGirl-winui3\NekoGirl-winui3\Properties\PublishProfiles\win-x64.pubxml</_LastSelectedProfileId>
     <AppxShowAllApps>False</AppxShowAllApps>
+    <UapAppxPackageBuildMode>StoreAndSideload</UapAppxPackageBuildMode>
+    <AppxBuildConfigurationSelection>x64|arm64</AppxBuildConfigurationSelection>
+    <PackageOptionalProjectsInIdeBuilds>False</PackageOptionalProjectsInIdeBuilds>
   </PropertyGroup>
   <ItemGroup>
     <None Update="App.xaml">

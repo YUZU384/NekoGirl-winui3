@@ -35,7 +35,7 @@
                         Orientation="Horizontal" 
                         Spacing="10"
                         VerticalAlignment="Center">
-                <Image Source="Assets/Neko64x64.ico" 
+                <Image Source="Assets/Neko_256x256.targetsize-256.png" 
                        Width="28" 
                        Height="28"/>
                 <TextBlock Text="NekoGirl-猫娘下载器，随机获取猫娘"

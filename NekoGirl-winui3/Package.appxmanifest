@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -10,14 +10,14 @@
   <Identity
     Name="YUZU384.NekoGirl"
     Publisher="CN=872C1CEB-4F85-42A5-B826-0375B59C8EC5"
-    Version="1.0.0.0" />
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="60dd07f7-4e69-4d00-b732-abcc4983d965" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>NekoGirl</DisplayName>
     <PublisherDisplayName>YUZU384</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\Neko_200x200.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -37,10 +37,17 @@
         DisplayName="NekoGirl"
         Description="NekoGirl-winui3"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Neko150x150Logo.png"
-        Square44x44Logo="Assets\Neko44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Neko150x150Logo.png" Square71x71Logo="Assets\Neko71x71Logo.png" Square310x310Logo="Assets\Neko310x310Logo.png"/>
-        <uap:SplashScreen Image="Assets\Neko150x150Logo.png" />
+        Square150x150Logo="Assets\Neko_600x600.png"
+        Square44x44Logo="Assets\Neko_256x256.png">
+        <uap:DefaultTile ShortName="Neko" Square71x71Logo="Assets\Neko_284x284.png" Wide310x150Logo="Assets\Neko_1240x600.png" Square310x310Logo="Assets\Neko_1240x1240.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo"/>
+            <uap:ShowOn Tile="wide310x150Logo"/>
+            <uap:ShowOn Tile="square310x310Logo"/>
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile >
+        <uap:LockScreen Notification="badge" BadgeLogo="Assets\Neko_96x96.png"/>
+        <uap:SplashScreen Image="Assets\Neko_1240x600.png"/>
       </uap:VisualElements>
 
     </Application>
