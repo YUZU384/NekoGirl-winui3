@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -10,7 +10,7 @@
   <Identity
     Name="YUZU384.NekoGirl"
     Publisher="CN=872C1CEB-4F85-42A5-B826-0375B59C8EC5"
-    Version="1.0.2.0" />
+    Version="1.0.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="60dd07f7-4e69-4d00-b732-abcc4983d965" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

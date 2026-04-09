@@ -11,19 +11,19 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 画刷 -->
-            <SolidColorBrush x:Key="NekoPinkBrush" Color="#F06595"/>
-            <SolidColorBrush x:Key="NekoPinkLightBrush" Color="#FAA2C1"/>
-            <SolidColorBrush x:Key="NekoPinkDarkBrush" Color="#E64980"/>
-            <SolidColorBrush x:Key="NekoBackgroundBrush" Color="#FFDEEB"/>
-            
-            <!-- 卡片阴影 -->
+            <!-- ============================================ -->
+            <!-- 颜色画刷定义 -->
+            <SolidColorBrush x:Key="NekoPinkBrush" Color="#F06595"/>                 <!-- NekoPinkBrush: 主色调画刷，用于按钮背景、标题栏等核心UI元素 -->
+            <SolidColorBrush x:Key="NekoPinkLightBrush" Color="#FAA2C1"/>            <!-- NekoPinkLightBrush: 浅粉色画刷，用于状态提示框背景 -->
+            <SolidColorBrush x:Key="NekoPinkDarkBrush" Color="#E64980"/>             <!-- NekoPinkDarkBrush: 深粉色画刷，用于悬停状态、文字标题 -->
+            <SolidColorBrush x:Key="NekoBackgroundBrush" Color="#FFDEEB"/>           <!-- NekoBackgroundBrush: 背景色画刷，用于窗口主背景 -->
+
+            <!-- 阴影效果 -->
             <ThemeShadow x:Name="SharedShadow" x:Key="CardShadow">
                 <ThemeShadow.Receivers>
-                    <!-- 阴影接收器将在代码中动态添加 -->
                 </ThemeShadow.Receivers>
             </ThemeShadow>
-            
+
             <!-- 基础按钮样式 -->
             <Style x:Key="BaseNekoButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{StaticResource NekoPinkBrush}"/>
@@ -31,47 +31,65 @@
                 <Setter Property="CornerRadius" Value="20"/>
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <ContentPresenter x:Name="ContentPresenter"
-                                              Background="{TemplateBinding Background}"
-                                              Foreground="{TemplateBinding Foreground}"
-                                              CornerRadius="{TemplateBinding CornerRadius}"
-                                              Padding="{TemplateBinding Padding}"
-                                              HorizontalContentAlignment="Center"
-                                              VerticalContentAlignment="Center">
+                            <Grid x:Name="RootGrid">
+                                <!-- 背景层 -->
+                                <Border x:Name="BackgroundBorder"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"/>
+                                
+                                <!-- 悬停/按下效果层 -->
+                                <Border x:Name="HoverOverlay"
+                                        Background="White"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        Opacity="0"/>
+                                
+                                <!-- 内容层 -->
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Foreground="{TemplateBinding Foreground}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="Center"
+                                                  VerticalContentAlignment="Center"/>
+                                
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
+                                        <!-- 正常状态 -->
                                         <VisualState x:Name="Normal">
                                             <Storyboard>
-                                                <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                             </Storyboard>
                                         </VisualState>
+                                        <!-- 悬停状态: 白色遮罩淡入 -->
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource NekoPinkDarkBrush}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                                </ObjectAnimationUsingKeyFrames>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay"
+                                                                 Storyboard.TargetProperty="Opacity"
+                                                                 To="0.1"
+                                                                 Duration="0:0:0.15">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CircleEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                             </Storyboard>
                                         </VisualState>
+                                        <!-- 按下状态: 缩放 + 深色遮罩 -->
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource NekoPinkDarkBrush}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <PointerDownThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay"
+                                                                 Storyboard.TargetProperty="Opacity"
+                                                                 To="0.2"
+                                                                 Duration="0:0:0.1"/>
+                                                <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
                                             </Storyboard>
                                         </VisualState>
+                                        <!-- 禁用状态 -->
                                         <VisualState x:Name="Disabled">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BackgroundBorder" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="LightGray"/>
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
@@ -81,12 +99,14 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                            </ContentPresenter>
+                            </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
-            
+
+
+            <!-- ============================================ -->
             <!-- 主要按钮样式 -->
             <Style x:Key="NekoButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseNekoButtonStyle}">
                 <Setter Property="Padding" Value="20,10"/>
@@ -102,7 +122,7 @@
                 <Setter Property="Padding" Value="20,12"/>
             </Style>
             
-            <!-- 打开目录按钮样式 -->
+            <!-- 打开目录按钮样式 (描边按钮) -->
             <Style x:Key="OpenFolderButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{StaticResource NekoPinkBrush}"/>
@@ -115,31 +135,48 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="Border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid x:Name="RootGrid">
+                                <Border x:Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"/>
+                                <Border x:Name="HoverFill"
+                                        Background="{StaticResource NekoPinkBrush}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        Opacity="0"/>
                                 <ContentPresenter x:Name="ContentPresenter"
                                                   Foreground="{TemplateBinding Foreground}"
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="Center"
                                                   VerticalContentAlignment="Center"/>
+                                
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal"/>
+                                        <!-- 悬停状态: 填充色淡入，文字变白 -->
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource NekoPinkBrush}"/>
-                                                </ObjectAnimationUsingKeyFrames>
+                                                <DoubleAnimation Storyboard.TargetName="HoverFill"
+                                                                 Storyboard.TargetProperty="Opacity"
+                                                                 To="1"
+                                                                 Duration="0:0:0.2">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CircleEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
+                                        <!-- 按下状态 -->
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="HoverFill"
+                                                                 Storyboard.TargetProperty="Opacity"
+                                                                 To="1"
+                                                                 Duration="0:0:0.1"/>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource NekoPinkDarkBrush}"/>
                                                 </ObjectAnimationUsingKeyFrames>
@@ -150,90 +187,168 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                            </Border>
+                            </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
             
-            <!-- 图片加载动画 -->
+            <!-- ============================================ -->            
+            <!-- 图片淡入动画 (Connected Animation 风格) -->
             <Storyboard x:Key="ImageFadeInAnimation">
                 <DoubleAnimation Storyboard.TargetProperty="Opacity"
                                  From="0" To="1"
-                                 Duration="0:0:0.3">
+                                 Duration="0:0:0.4">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                 From="0.95" To="1"
-                                 Duration="0:0:0.3">
+                                 From="0.92" To="1"
+                                 Duration="0:0:0.5">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                 From="0.95" To="1"
-                                 Duration="0:0:0.3">
+                                 From="0.92" To="1"
+                                 Duration="0:0:0.5">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>
             
-            <!-- 卡片进入动画 -->
+            <!-- 图片淡出动画 -->
+            <Storyboard x:Key="ImageFadeOutAnimation">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 To="0"
+                                 Duration="0:0:0.2">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseIn"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            
+            <!-- 卡片进入动画 (从右侧滑入) -->
             <Storyboard x:Key="CardEntranceAnimation">
                 <DoubleAnimation Storyboard.TargetProperty="Opacity"
                                  From="0" To="1"
-                                 Duration="0:0:0.4">
+                                 Duration="0:0:0.5">
                     <DoubleAnimation.EasingFunction>
-                        <QuadraticEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                                 From="20" To="0"
-                                 Duration="0:0:0.4">
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 From="60" To="0"
+                                 Duration="0:0:0.6">
                     <DoubleAnimation.EasingFunction>
-                        <QuadraticEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>
             
-            <!-- 按钮悬停缩放动画 -->
+            <!-- 卡片交错进入动画 (用于多个卡片) -->
+            <Storyboard x:Key="CardStaggerEntranceAnimation">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="0" To="1"
+                                 Duration="0:0:0.5">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 From="40" To="0"
+                                 Duration="0:0:0.6">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            
+            <!-- 按钮悬停动画 -->
             <Storyboard x:Key="ButtonHoverScaleAnimation">
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                 To="1.02"
-                                 Duration="0:0:0.15">
+                                 To="1.03"
+                                 Duration="0:0:0.2">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                 To="1.02"
-                                 Duration="0:0:0.15">
+                                 To="1.03"
+                                 Duration="0:0:0.2">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>
             
-            <!-- 按钮按下缩放动画 -->
+            <!-- 按钮按下动画 -->
             <Storyboard x:Key="ButtonPressScaleAnimation">
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                 To="0.98"
+                                 To="0.97"
                                  Duration="0:0:0.1">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                 To="0.98"
+                                 To="0.97"
                                  Duration="0:0:0.1">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <CircleEase EasingMode="EaseOut"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>
+            
+            <!-- 状态提示显示动画 (从右侧滑入) -->
+            <Storyboard x:Key="StatusShowAnimation">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="0" To="1"
+                                 Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 From="100" To="0"
+                                 Duration="0:0:0.4">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            
+            <!-- 状态提示隐藏动画 (向右滑出 + 向下移动 + 淡出) -->
+            <Storyboard x:Key="StatusHideAnimation">
+                <!-- 第一阶段: 向右滑出 -->
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 To="100"
+                                 Duration="0:0:0.25">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseIn"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <!-- 第二阶段: 向下移动并淡出 -->
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                 To="60"
+                                 BeginTime="0:0:0.2"
+                                 Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseIn"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 To="0"
+                                 BeginTime="0:0:0.2"
+                                 Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <CircleEase EasingMode="EaseIn"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

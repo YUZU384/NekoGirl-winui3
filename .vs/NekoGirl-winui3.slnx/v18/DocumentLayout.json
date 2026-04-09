@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "E:\\git\\NekoGirl-winui3\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DB52C46E-CEED-5A6A-4A7B-0FFFBD9721DE}|NekoGirl-winui3\\NekoGirl-winui3.csproj|e:\\git\\nekogirl-winui3\\nekogirl-winui3\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{DB52C46E-CEED-5A6A-4A7B-0FFFBD9721DE}|NekoGirl-winui3\\NekoGirl-winui3.csproj|solutionrelative:nekogirl-winui3\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{DB52C46E-CEED-5A6A-4A7B-0FFFBD9721DE}|NekoGirl-winui3\\NekoGirl-winui3.csproj|e:\\git\\nekogirl-winui3\\nekogirl-winui3\\nekogirl-winui3.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
       "RelativeMoniker": "D:0:0:{DB52C46E-CEED-5A6A-4A7B-0FFFBD9721DE}|NekoGirl-winui3\\NekoGirl-winui3.csproj|solutionrelative:nekogirl-winui3\\nekogirl-winui3.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
@@ -27,19 +23,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "App.xaml",
-              "DocumentMoniker": "E:\\git\\NekoGirl-winui3\\NekoGirl-winui3\\App.xaml",
-              "RelativeDocumentMoniker": "NekoGirl-winui3\\App.xaml",
-              "ToolTip": "E:\\git\\NekoGirl-winui3\\NekoGirl-winui3\\App.xaml",
-              "RelativeToolTip": "NekoGirl-winui3\\App.xaml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-04-07T15:39:39.874Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "NekoGirl-winui3",
               "DocumentMoniker": "E:\\git\\NekoGirl-winui3\\NekoGirl-winui3\\NekoGirl-winui3.csproj",
               "RelativeDocumentMoniker": "NekoGirl-winui3\\NekoGirl-winui3.csproj",
@@ -51,15 +34,14 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Package.appxmanifest",
               "DocumentMoniker": "E:\\git\\NekoGirl-winui3\\NekoGirl-winui3\\Package.appxmanifest",
               "RelativeDocumentMoniker": "NekoGirl-winui3\\Package.appxmanifest",
               "ToolTip": "E:\\git\\NekoGirl-winui3\\NekoGirl-winui3\\Package.appxmanifest",
               "RelativeToolTip": "NekoGirl-winui3\\Package.appxmanifest",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001793|",
-              "WhenOpened": "2026-04-07T14:03:01.562Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-07T14:03:01.562Z"
             }
           ]
         }

@@ -9,6 +9,12 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.microsoft.com/detail/9NCFXVMKFV2Q">
+    <img src="https://img.shields.io/badge/微软商店-获取应用-blue?style=flat-square&logo=microsoft" alt="Microsoft Store">
+  </a>
+</p>
+
+<p align="center">
   <a href="#-界面预览">界面预览</a> •
   <a href="#-功能特性">功能特性</a> •
   <a href="#-系统要求">系统要求</a> •

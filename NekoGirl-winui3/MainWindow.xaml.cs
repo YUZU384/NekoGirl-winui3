@@ -1,7 +1,10 @@
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using NekoGirl_winui3.Services;
 using System.Diagnostics;
@@ -13,62 +16,372 @@ using Windows.System;
 
 namespace NekoGirl_winui3;
 
+/// <summary>
+/// 提示卡片管理器 - 支持多卡片并发
+/// </summary>
+public class ToastNotificationManager
+{
+    private readonly Panel _container;
+    private readonly List<ToastCard> _activeCards = new();
+    private readonly object _lock = new();
+    private int _cardIdCounter = 0;
+
+    public ToastNotificationManager(Panel container)
+    {
+        _container = container;
+    }
+
+    /// <summary>
+    /// 显示提示卡片
+    /// </summary>
+    /// <param name="message">消息内容</param>
+    /// <param name="durationMs">显示时长，0表示不自动消失</param>
+    /// <returns>卡片ID，可用于手动隐藏</returns>
+    public int Show(string message, int durationMs = 2000)
+    {
+        var cardId = Interlocked.Increment(ref _cardIdCounter);
+
+        _ = Task.Run(async () =>
+        {
+            var card = new ToastCard(cardId, message, _container, this);
+
+            lock (_lock)
+            {
+                _activeCards.Add(card);
+            }
+
+            await card.ShowAsync();
+
+            if (durationMs > 0)
+            {
+                await Task.Delay(durationMs);
+                await card.HideAsync();
+
+                lock (_lock)
+                {
+                    _activeCards.Remove(card);
+                }
+            }
+        });
+
+        return cardId;
+    }
+
+    /// <summary>
+    /// 立即隐藏包含指定消息的卡片
+    /// </summary>
+    public void Hide(string message)
+    {
+        lock (_lock)
+        {
+            var cardsToHide = _activeCards.Where(c => c.Message == message).ToList();
+            foreach (var card in cardsToHide)
+            {
+                _ = Task.Run(async () =>
+                {
+                    await card.HideAsync();
+                    lock (_lock)
+                    {
+                        _activeCards.Remove(card);
+                    }
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取活动卡片数量
+    /// </summary>
+    public int ActiveCardCount
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _activeCards.Count;
+            }
+        }
+    }
+}
+
+/// <summary>
+/// 单个提示卡片 - 使用高性能Storyboard动画
+/// </summary>
+public class ToastCard
+{
+    private readonly int _id;
+    private readonly Panel _container;
+    private readonly ToastNotificationManager _manager;
+    private Border? _border;
+    private TextBlock? _textBlock;
+    private Storyboard? _slideInStoryboard;
+    private Storyboard? _slideOutStoryboard;
+
+    public string Message { get; }
+
+    public ToastCard(int id, string message, Panel container, ToastNotificationManager manager)
+    {
+        _id = id;
+        Message = message;
+        _container = container;
+        _manager = manager;
+    }
+
+    /// <summary>
+    /// 显示卡片 - 从右边滑入
+    /// </summary>
+    public async Task ShowAsync()
+    {
+        var tcs = new TaskCompletionSource();
+
+        await _container.DispatcherQueue.EnqueueAsync(async () =>
+        {
+            try
+            {
+                // 创建卡片UI
+                _border = new Border
+                {
+                    Background = Application.Current.Resources["NekoPinkLightBrush"] as Brush,
+                    CornerRadius = new CornerRadius(12),
+                    Padding = new Thickness(16),
+                    Margin = new Thickness(0, 8, 0, 0),
+                    Opacity = 0
+                };
+
+                _textBlock = new TextBlock
+                {
+                    Text = Message,
+                    FontSize = 13,
+                    Foreground = Application.Current.Resources["NekoPinkDarkBrush"] as Brush,
+                    TextWrapping = TextWrapping.Wrap,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextAlignment = TextAlignment.Center
+                };
+
+                _border.Child = _textBlock;
+
+                // 设置初始位置
+                var transform = new TranslateTransform { X = 120 };
+                _border.RenderTransform = transform;
+
+                // 添加到容器顶部
+                _container.Children.Insert(0, _border);
+
+                // 创建高性能Storyboard动画
+                _slideInStoryboard = CreateSlideInStoryboard(_border, transform);
+
+                // 监听动画完成
+                _slideInStoryboard.Completed += (s, e) =>
+                {
+                    tcs.SetResult();
+                };
+
+                // 开始动画
+                _border.Opacity = 1;
+                _slideInStoryboard.Begin();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        await tcs.Task;
+    }
+
+    /// <summary>
+    /// 隐藏卡片 - 向下滑出并淡出
+    /// </summary>
+    public async Task HideAsync()
+    {
+        if (_border == null) return;
+
+        var tcs = new TaskCompletionSource();
+
+        await _border.DispatcherQueue.EnqueueAsync(() =>
+        {
+            try
+            {
+                var transform = _border.RenderTransform as TranslateTransform;
+                if (transform == null)
+                {
+                    transform = new TranslateTransform();
+                    _border.RenderTransform = transform;
+                }
+
+                _slideOutStoryboard = CreateSlideOutStoryboard(_border, transform);
+
+                _slideOutStoryboard.Completed += (s, e) =>
+                {
+                    if (_container.Children.Contains(_border))
+                    {
+                        _container.Children.Remove(_border);
+                    }
+                    tcs.SetResult();
+                };
+
+                _slideOutStoryboard.Begin();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        await tcs.Task;
+    }
+
+    /// <summary>
+    /// 创建滑入Storyboard - 高性能硬件加速动画
+    /// </summary>
+    private Storyboard CreateSlideInStoryboard(Border border, TranslateTransform transform)
+    {
+        var storyboard = new Storyboard();
+
+        // X轴位移动画
+        var xAnimation = new DoubleAnimation
+        {
+            From = 120,
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(300)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        Storyboard.SetTarget(xAnimation, transform);
+        Storyboard.SetTargetProperty(xAnimation, "X");
+        storyboard.Children.Add(xAnimation);
+
+        return storyboard;
+    }
+
+    /// <summary>
+    /// 创建滑出Storyboard - 高性能硬件加速动画
+    /// </summary>
+    private Storyboard CreateSlideOutStoryboard(Border border, TranslateTransform transform)
+    {
+        var storyboard = new Storyboard();
+
+        // Y轴位移动画
+        var yAnimation = new DoubleAnimation
+        {
+            To = 80,
+            Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+        };
+        Storyboard.SetTarget(yAnimation, transform);
+        Storyboard.SetTargetProperty(yAnimation, "Y");
+        storyboard.Children.Add(yAnimation);
+
+        // 淡出动画
+        var opacityAnimation = new DoubleAnimation
+        {
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+        };
+        Storyboard.SetTarget(opacityAnimation, border);
+        Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
+        storyboard.Children.Add(opacityAnimation);
+
+        return storyboard;
+    }
+}
+
+/// <summary>
+/// DispatcherQueue 扩展方法
+/// </summary>
+public static class DispatcherQueueExtensions
+{
+    public static Task EnqueueAsync(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Action action)
+    {
+        var tcs = new TaskCompletionSource();
+        dispatcher.TryEnqueue(() =>
+        {
+            try
+            {
+                action();
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+        return tcs.Task;
+    }
+
+    public static Task EnqueueAsync(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<Task> action)
+    {
+        var tcs = new TaskCompletionSource();
+        dispatcher.TryEnqueue(async () =>
+        {
+            try
+            {
+                await action();
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+        return tcs.Task;
+    }
+}
+
+/// <summary>
+/// MainWindow类 - 应用程序主窗口
+/// </summary>
 public sealed partial class MainWindow : Window
 {
+    // ============================================
+    // 服务与数据字段
+    // ============================================
     private readonly GetImageService _imageService = new();
     private int _currentIndex = -1;
     private string _saveDirectory = "";
     private AppWindow? _appWindow;
     private readonly string _configPath;
     private bool _isNavigating;
-    private readonly DispatcherTimer _statusTimer;
 
+    // ============================================
+    // 动画相关字段
+    // ============================================
+    private ToastNotificationManager? _toastManager;
+
+    /// <summary>
+    /// 构造函数
+    /// </summary>
     public MainWindow()
     {
         InitializeComponent();
 
-        // 配置文件路径
         _configPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "NekoGirl",
             "config.json");
 
-        // 初始化状态定时器
-        _statusTimer = new DispatcherTimer();
-        _statusTimer.Tick += StatusTimer_Tick;
-
-        // 初始化窗口
         InitializeWindow();
-
-        // 加载配置
         LoadConfig();
 
-        // 窗口启动时预加载图片
         _ = InitializeAsync();
     }
 
+    // ============================================
+    // 窗口初始化
+    // ============================================
+
     private void InitializeWindow()
     {
-        // 获取 AppWindow
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
         _appWindow = AppWindow.GetFromWindowId(windowId);
 
         if (_appWindow == null) return;
 
-        // 设置窗口大小
         SetWindowSize(714, 757);
-
-        // 设置窗口居中
         CenterWindow();
-
-        // 配置自定义标题栏
         SetupCustomTitleBar();
-
-        // 设置窗口最小尺寸
         SetMinWindowSize();
-
-        // 注册键盘事件
         Content.KeyDown += MainWindow_KeyDown;
     }
 
@@ -77,26 +390,16 @@ public sealed partial class MainWindow : Window
         if (_appWindow == null || !AppWindowTitleBar.IsCustomizationSupported()) return;
 
         var titleBar = _appWindow.TitleBar;
-
-        // 将内容扩展到标题栏
         titleBar.ExtendsContentIntoTitleBar = true;
-
-        // 设置标题栏按钮的背景颜色（透明）
         titleBar.ButtonBackgroundColor = Colors.Transparent;
         titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
         titleBar.ButtonHoverBackgroundColor = ColorHelper.FromArgb(255, 255, 255, 255);
         titleBar.ButtonPressedBackgroundColor = ColorHelper.FromArgb(255, 230, 230, 230);
-
-        // 设置标题栏按钮的前景色
         titleBar.ButtonForegroundColor = Colors.White;
         titleBar.ButtonInactiveForegroundColor = Colors.White;
         titleBar.ButtonHoverForegroundColor = Colors.Black;
         titleBar.ButtonPressedForegroundColor = Colors.Black;
-
-        // 设置标题栏高度区域（拖动区域）
         titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-
-        // 设置可拖动区域
         SetTitleBar(TitleBarGrid);
     }
 
@@ -119,7 +422,6 @@ public sealed partial class MainWindow : Window
             Debug.WriteLine($"[配置加载失败] {ex.Message}");
         }
 
-        // 如果没有有效配置，使用默认路径
         if (string.IsNullOrEmpty(_saveDirectory))
         {
             _saveDirectory = Path.Combine(
@@ -171,21 +473,17 @@ public sealed partial class MainWindow : Window
         {
             if (_appWindow == null) return;
 
-            // 获取屏幕工作区
             var displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Primary);
             var workArea = displayArea.WorkArea;
 
-            // 计算居中位置
             int windowWidth = 700;
             int windowHeight = 730;
             int x = (workArea.Width - windowWidth) / 2;
             int y = (workArea.Height - windowHeight) / 2;
 
-            // 确保窗口不会超出屏幕边界
             x = Math.Max(workArea.X, Math.Min(x, workArea.X + workArea.Width - windowWidth));
             y = Math.Max(workArea.Y, Math.Min(y, workArea.Y + workArea.Height - windowHeight));
 
-            // 移动窗口
             _appWindow.Move(new PointInt32(x, y));
         }
         catch (Exception ex)
@@ -194,19 +492,134 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    // ============================================
+    // 初始化流程
+    // ============================================
+
     private async Task InitializeAsync()
     {
-        ShowStatus("正在初始化，请稍候喵~");
+        // 初始化提示卡片管理器
+        _toastManager = new ToastNotificationManager(ToastContainer);
+
+        // 播放卡片进入动画
+        await PlayCardEntranceAnimationsAsync();
+
+        // 显示初始化提示
+        ShowToast("正在初始化，请稍候喵~");
+
         try
         {
             await _imageService.GetNextSetAsync();
-            ShowStatus("初始化完成！点击「下一只」开始浏览喵", 2000);
+            await Task.Delay(500);
+            ShowToast("初始化完成！点击「下一只」开始浏览喵");
         }
         catch (Exception ex)
         {
-            ShowStatus($"初始化失败: {ex.Message}", 3000);
+            ShowToast($"初始化失败: {ex.Message}");
         }
     }
+
+    // ============================================
+    // 初始化动画 - 卡片从左右弹出 (使用Storyboard)
+    // ============================================
+
+    private async Task PlayCardEntranceAnimationsAsync()
+    {
+        var tcs = new TaskCompletionSource();
+        int completedCount = 0;
+        int totalCount = 4;
+
+        void OnAnimationCompleted()
+        {
+            completedCount++;
+            if (completedCount >= totalCount)
+            {
+                tcs.SetResult();
+            }
+        }
+
+        // 左侧图片显示区 - 从左边弹出
+        await DispatcherQueue.EnqueueAsync(() =>
+        {
+            AnimateCardEntrance(ImageDisplayBorder, fromLeft: true, delayMs: 0, OnAnimationCompleted);
+        });
+
+        // 右侧卡片 - 从右边弹出
+        await DispatcherQueue.EnqueueAsync(() =>
+        {
+            AnimateCardEntrance(ArtistInfoCard, fromLeft: false, delayMs: 100, OnAnimationCompleted);
+        });
+
+        await DispatcherQueue.EnqueueAsync(() =>
+        {
+            AnimateCardEntrance(BrowseControlCard, fromLeft: false, delayMs: 200, OnAnimationCompleted);
+        });
+
+        await DispatcherQueue.EnqueueAsync(() =>
+        {
+            AnimateCardEntrance(SaveManageCard, fromLeft: false, delayMs: 300, OnAnimationCompleted);
+        });
+
+        await tcs.Task;
+    }
+
+    /// <summary>
+    /// 卡片进入动画 - 使用Storyboard硬件加速
+    /// </summary>
+    private void AnimateCardEntrance(Border card, bool fromLeft, int delayMs, Action onCompleted)
+    {
+        var transform = new TranslateTransform { X = fromLeft ? -100 : 100 };
+        card.RenderTransform = transform;
+        card.Opacity = 0;
+
+        var storyboard = new Storyboard();
+
+        // 位移动画
+        var xAnimation = new DoubleAnimation
+        {
+            From = fromLeft ? -100 : 100,
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+            BeginTime = TimeSpan.FromMilliseconds(delayMs),
+            EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.3 }
+        };
+        Storyboard.SetTarget(xAnimation, transform);
+        Storyboard.SetTargetProperty(xAnimation, "X");
+        storyboard.Children.Add(xAnimation);
+
+        // 淡入动画
+        var opacityAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = 1,
+            Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+            BeginTime = TimeSpan.FromMilliseconds(delayMs)
+        };
+        Storyboard.SetTarget(opacityAnimation, card);
+        Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
+        storyboard.Children.Add(opacityAnimation);
+
+        storyboard.Completed += (s, e) => onCompleted?.Invoke();
+        storyboard.Begin();
+    }
+
+    // ============================================
+    // 提示卡片 - 支持多卡片并发
+    // ============================================
+
+    private void ShowToast(string message, int durationMs = 2000)
+    {
+        _toastManager?.Show(message, durationMs);
+    }
+
+    private void HideToast(string message)
+    {
+        _toastManager?.Hide(message);
+    }
+
+    // ============================================
+    // 图片浏览
+    // ============================================
 
     private async void PrevButton_Click(object sender, RoutedEventArgs e)
     {
@@ -218,7 +631,6 @@ public sealed partial class MainWindow : Window
     {
         if (_isNavigating) return;
 
-        // 快看完时预加载
         if (_currentIndex >= _imageService.ImageCount - 2)
         {
             _ = PreloadNextSetAsync();
@@ -247,8 +659,6 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            Debug.WriteLine($"导航: 当前索引 {_currentIndex} -> 目标索引 {targetIndex}");
-
             if (await LoadImageAsync(targetIndex))
             {
                 _currentIndex = targetIndex;
@@ -264,10 +674,19 @@ public sealed partial class MainWindow : Window
 
     private async Task<bool> LoadImageAsync(int index)
     {
-        ShowStatus("正在加载图像，请等待喵......");
+        const string loadingMessage = "正在加载图像，请等待喵......";
+
+        // 检查图片是否已缓存
+        bool isCached = _imageService.IsImageCached(index);
+
+        // 只有未缓存的图片才显示加载提示
+        if (!isCached)
+        {
+            ShowToast(loadingMessage, 0); // 0表示不自动消失
+        }
+
         PlaceholderText.Visibility = Visibility.Collapsed;
         LoadingRing.Visibility = Visibility.Visible;
-        MainImage.Visibility = Visibility.Collapsed;
 
         try
         {
@@ -277,25 +696,61 @@ public sealed partial class MainWindow : Window
 
             if (bitmap == null)
             {
-                ShowStatus("图片加载失败，请重试喵~", 2000);
+                if (!isCached)
+                {
+                    HideToast(loadingMessage);
+                }
+                ShowToast("图片加载失败，请重试喵~");
                 return false;
+            }
+
+            // 加载成功，如果是未缓存的图片则隐藏加载消息
+            if (!isCached)
+            {
+                HideToast(loadingMessage);
             }
 
             MainImage.Source = bitmap;
             MainImage.Visibility = Visibility.Visible;
 
-            // 更新画师信息
-            UpdateArtistInfo(index);
+            // 简单的淡入效果 - 使用Storyboard
+            AnimateImageFadeIn(MainImage);
 
-            HideStatus();
+            UpdateArtistInfo(index);
             return true;
         }
         catch (Exception ex)
         {
             LoadingRing.Visibility = Visibility.Collapsed;
-            ShowStatus($"加载错误: {ex.Message}", 3000);
+            if (!isCached)
+            {
+                HideToast(loadingMessage);
+            }
+            ShowToast($"加载错误: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// 图片淡入动画 - 使用Storyboard
+    /// </summary>
+    private void AnimateImageFadeIn(Image image)
+    {
+        image.Opacity = 0;
+
+        var storyboard = new Storyboard();
+
+        var opacityAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = 1,
+            Duration = new Duration(TimeSpan.FromMilliseconds(300))
+        };
+        Storyboard.SetTarget(opacityAnimation, image);
+        Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
+        storyboard.Children.Add(opacityAnimation);
+
+        storyboard.Begin();
     }
 
     private void UpdateArtistInfo(int index)
@@ -318,6 +773,10 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    // ============================================
+    // 按钮事件
+    // ============================================
+
     private async void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         if (MainImage.Source is not BitmapImage || _currentIndex < 0) return;
@@ -328,21 +787,20 @@ public sealed partial class MainWindow : Window
             string fileName = $"neko_{timestamp}.png";
             string filePath = Path.Combine(_saveDirectory, fileName);
 
-            // 直接从缓存获取图片字节保存，无需重新下载
             byte[]? imageBytes = _imageService.GetImageBytes(_currentIndex);
             if (imageBytes != null && imageBytes.Length > 0)
             {
                 await File.WriteAllBytesAsync(filePath, imageBytes);
-                ShowStatus($"图片已保存: {fileName}", 2000);
+                ShowToast($"图片已保存: {fileName}");
             }
             else
             {
-                ShowStatus("图片数据未找到", 2000);
+                ShowToast("图片数据未找到");
             }
         }
         catch (Exception ex)
         {
-            ShowStatus($"保存失败: {ex.Message}", 3000);
+            ShowToast($"保存失败: {ex.Message}");
         }
     }
 
@@ -354,7 +812,6 @@ public sealed partial class MainWindow : Window
         };
         folderPicker.FileTypeFilter.Add("*");
 
-        // 获取窗口句柄
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
 
@@ -364,7 +821,7 @@ public sealed partial class MainWindow : Window
             _saveDirectory = folder.Path;
             SavePathText.Text = $"保存位置: {_saveDirectory}";
             SaveConfig();
-            ShowStatus("保存目录已更改", 1500);
+            ShowToast("保存目录已更改");
         }
     }
 
@@ -382,9 +839,13 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            ShowStatus($"无法打开目录: {ex.Message}", 3000);
+            ShowToast($"无法打开目录: {ex.Message}");
         }
     }
+
+    // ============================================
+    // 键盘和按钮状态
+    // ============================================
 
     private void MainWindow_KeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -420,63 +881,17 @@ public sealed partial class MainWindow : Window
         PrevButton.IsEnabled = enabled && _currentIndex > 0;
         NextButton.IsEnabled = enabled;
     }
-
-    private void ShowStatus(string message, int autoHideDelayMs = 0)
-    {
-        _statusTimer.Stop();
-        StatusText.Text = message;
-
-        // 停止之前的动画
-        StatusHideStoryboard?.Stop();
-
-        // 重置状态 - 从下方滑入
-        StatusTransform.X = 0;
-        StatusTransform.Y = 20;
-        StatusBorder.Opacity = 0;
-        StatusBorder.Visibility = Visibility.Visible;
-
-        // 播放显示动画
-        StatusShowStoryboard?.Begin();
-
-        // 设置自动隐藏
-        if (autoHideDelayMs > 0)
-        {
-            _statusTimer.Interval = TimeSpan.FromMilliseconds(autoHideDelayMs);
-            _statusTimer.Start();
-        }
-    }
-
-    private void StatusTimer_Tick(object? sender, object e)
-    {
-        _statusTimer.Stop();
-        HideStatus();
-    }
-
-    private void HideStatus()
-    {
-        // 停止之前的动画
-        StatusShowStoryboard?.Stop();
-
-        // 播放隐藏动画
-        StatusHideStoryboard?.Begin();
-    }
-
-    private void StatusHideStoryboard_Completed(object? sender, object e)
-    {
-        StatusBorder.Visibility = Visibility.Collapsed;
-        StatusTransform.X = 0;
-        StatusTransform.Y = 20;
-        StatusBorder.Opacity = 0;
-    }
 }
 
-// 配置类
+// ============================================
+// 配置数据类
+// ============================================
+
 public class AppConfig
 {
     public string SaveDirectory { get; set; } = "";
 }
 
-// JSON Source Generation Context，支持裁剪
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(AppConfig))]
 internal partial class AppConfigContext : JsonSerializerContext

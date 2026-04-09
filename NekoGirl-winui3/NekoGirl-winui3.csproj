@@ -1,25 +1,79 @@
+<!-- ============================================ -->
+<!-- NekoGirl-winui3 项目文件 -->
+<!-- 项目类型: WinUI 3 桌面应用程序 -->
+<!-- 目标框架: .NET 10 -->
+<!-- ============================================ -->
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ============================================ -->
+  <!-- 项目属性配置 (PropertyGroup) -->
+  <!-- ============================================ -->
   <PropertyGroup>
+    <!-- 输出类型: WinExe (Windows GUI应用程序，无控制台窗口) -->
     <OutputType>WinExe</OutputType>
+    
+    <!-- 目标框架: .NET 10, Windows 10 版本19041 (20H1) -->
+    <!-- 格式: net{版本}-windows{Windows版本} -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    
+    <!-- 最低支持Windows版本: Windows 10 版本1809 (Build 17763) -->
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    
+    <!-- 根命名空间: 用于生成的代码和资源的命名空间前缀 -->
     <RootNamespace>NekoGirl_winui3</RootNamespace>
+    
+    <!-- 应用程序清单文件: 定义应用程序权限和兼容性设置 -->
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    
+    <!-- 目标平台: x86(32位)、x64(64位)、ARM64(ARM 64位) -->
     <Platforms>x86;x64;ARM64</Platforms>
+    
+    <!-- 运行时标识符: 用于发布自包含应用程序 -->
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    
+    <!-- 启用WinUI: 使用Windows UI库 -->
     <UseWinUI>true</UseWinUI>
+    
+    <!-- 启用MSIX打包工具: 支持创建MSIX安装包 -->
     <EnableMsixTooling>true</EnableMsixTooling>
+    
+    <!-- 启用可空引用类型检查: 在编译时检测空引用问题 -->
     <Nullable>enable</Nullable>
+    
+    <!-- 启用隐式using: 自动导入常用命名空间 -->
     <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- 生成AppInstaller文件: 禁用 -->
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    
+    <!-- MSIX包签名: 禁用 (开发阶段不需要签名) -->
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+    
+    <!-- 签名时间戳摘要算法: SHA256 -->
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    
+    <!-- 自动递增包版本: 禁用 -->
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    
+    <!-- 生成测试工件: 启用 -->
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    
+    <!-- MSIX包捆绑方式: Always (总是生成捆绑包) -->
     <AppxBundle>Always</AppxBundle>
+    
+    <!-- MSIX包捆绑目标平台: x64和ARM64 -->
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
+    
+    <!-- 更新检查间隔: 0 (每次启动都检查) -->
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <DefaultLanguage>zh-cn</DefaultLanguage>
+    <ApplicationIcon>Assets\Neko_256x256.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <!-- ============================================ -->
+  <!-- 移除项配置 (ItemGroup - None Remove) -->
+  <!-- ============================================ -->
+  <!-- 作用: 显式声明这些文件不被默认包含规则处理 -->
   <ItemGroup>
     <None Remove="Assets\icon_source_original.scale-400.png" />
     <None Remove="Assets\Neko150x150Logo.scale-400.png" />
@@ -41,6 +95,10 @@
     <None Remove="Assets\Neko_96x96.scale-400.png" />
   </ItemGroup>
 
+  <!-- ============================================ -->
+  <!-- 内容文件配置 (ItemGroup - Content) -->
+  <!-- ============================================ -->
+  <!-- 作用: 将这些资源文件包含在输出中 -->
   <ItemGroup>
     <Content Include="Assets\Neko_256x256.ico" />
     <Content Include="Assets\Neko_256x256.png" />
@@ -60,19 +118,42 @@
     <Content Include="Assets\Neko_1240x1240.scale-400.png" />
   </ItemGroup>
 
+  <!-- ============================================ -->
+  <!-- 清单文件配置 (ItemGroup - Manifest) -->
+  <!-- ============================================ -->
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
+  <!-- ============================================ -->
+  <!-- MSIX项目能力配置 -->
+  <!-- ============================================ -->
+  <!-- 条件: 未禁用MSIX能力且启用了MSIX工具 -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+
+  <!-- ============================================ -->
+  <!-- NuGet包引用 (ItemGroup - PackageReference) -->
+  <!-- ============================================ -->
   <ItemGroup>
+    <!-- Microsoft.Windows.SDK.BuildTools: Windows SDK构建工具 -->
+    <!-- 版本: 10.0.28000.1721 -->
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
+    
+    <!-- Microsoft.WindowsAppSDK: Windows App SDK (WinUI 3) -->
+    <!-- 版本: 1.8.260317003 -->
+    <!-- 功能: 提供WinUI 3控件、窗口管理、应用生命周期等 -->
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
   </ItemGroup>
 
+  <!-- ============================================ -->
+  <!-- 包和发布菜单配置 -->
+  <!-- ============================================ -->
+  <!-- 条件: 未禁用菜单且启用了MSIX工具 -->
+  <!-- 作用: 在Visual Studio中显示"包和发布"菜单 -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+
 </Project>
