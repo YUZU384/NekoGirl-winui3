@@ -8,23 +8,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!-- ============================================ -->
-    <!-- 窗口背景效果配置 (WinUI 3 现代化材质) -->
-    <!-- ============================================ -->
     <Window.SystemBackdrop>
         <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
 
-    <!-- ============================================ -->
-    <!-- 主布局网格 -->
-    <!-- ============================================ -->
     <Grid Background="{StaticResource NekoBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 标题栏区域 -->
+        <!-- 标题栏 -->
         <Grid x:Name="TitleBarGrid"
               Grid.Row="0" 
               Background="{StaticResource NekoPinkBrush}"
@@ -35,7 +29,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
+
             <StackPanel Grid.Column="0" 
                         Orientation="Horizontal" 
                         Spacing="10"
@@ -51,14 +45,14 @@
             </StackPanel>
         </Grid>
 
-        <!-- 主内容区域 -->
+        <!-- 主内容 -->
         <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="270"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧: 图片显示区 -->
+            <!-- 左侧: 图片显示 -->
             <Border Grid.Column="0"
                     x:Name="ImageDisplayBorder"
                     Background="White"
@@ -71,28 +65,20 @@
                     <TranslateTransform X="-100" Y="0"/>
                 </Border.RenderTransform>
                 <Grid>
-                    <!-- 主图片显示控件 -->
                     <Image x:Name="MainImage"
                            Stretch="Uniform"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            RenderTransformOrigin="0.5,0.5"
-                           Opacity="0"
-                           UseLayoutRounding="True">
-                        <Image.RenderTransform>
-                            <ScaleTransform x:Name="ImageScaleTransform" ScaleX="1" ScaleY="1"/>
-                        </Image.RenderTransform>
-                    </Image>
-                    
-                    <!-- 加载进度环 -->
+                           Opacity="0"/>
+
                     <ProgressRing x:Name="LoadingRing"
                                   Width="60"
                                   Height="60"
                                   Foreground="{StaticResource NekoPinkBrush}"
                                   Visibility="Collapsed"
                                   IsActive="True"/>
-                    
-                    <!-- 占位提示文字 -->
+
                     <TextBlock x:Name="PlaceholderText"
                                Text="点击「下一只」开始浏览喵~&#x0A;或使用键盘 ← → 方向键"
                                FontSize="16"
@@ -106,8 +92,8 @@
 
             <!-- 右侧: 控制面板 -->
             <StackPanel Grid.Column="1" Spacing="16">
-                
-                <!-- 卡片1: 画师信息 -->
+
+                <!-- 画师信息 -->
                 <Border x:Name="ArtistInfoCard"
                         Background="White"
                         CornerRadius="16"
@@ -122,13 +108,13 @@
                                    FontSize="16"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource NekoPinkDarkBrush}"/>
-                        
+
                         <TextBlock x:Name="ArtistText"
                                    Text="暂无信息"
                                    FontSize="14"
                                    Foreground="Gray"
                                    TextWrapping="Wrap"/>
-                        
+
                         <HyperlinkButton x:Name="ArtistLink"
                                          Content="访问画师主页"
                                          NavigateUri=""
@@ -138,7 +124,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 卡片2: 浏览控制 -->
+                <!-- 浏览控制 -->
                 <Border x:Name="BrowseControlCard"
                         Background="White"
                         CornerRadius="16"
@@ -154,13 +140,13 @@
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource NekoPinkDarkBrush}"
                                    Margin="0,0,0,8"/>
-                        
+
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <Button x:Name="PrevButton"
                                     Grid.Column="0"
                                     Click="PrevButton_Click"
@@ -173,7 +159,7 @@
                                     <TextBlock Text="上一只"/>
                                 </StackPanel>
                             </Button>
-                            
+
                             <Button x:Name="NextButton"
                                     Grid.Column="1"
                                     Click="NextButton_Click"
@@ -195,7 +181,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 卡片3: 保存管理 -->
+                <!-- 保存管理 -->
                 <Border x:Name="SaveManageCard"
                         Background="White"
                         CornerRadius="16"
@@ -211,7 +197,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource NekoPinkDarkBrush}"
                                    Margin="0,0,0,8"/>
-                        
+
                         <Button x:Name="SelectFolderButton"
                                 Click="SelectFolderButton_Click"
                                 Style="{StaticResource SelectFolderButtonStyle}"
@@ -221,7 +207,7 @@
                                 <TextBlock Text="选择保存目录" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        
+
                         <TextBlock x:Name="SavePathText"
                                    Text=""
                                    FontSize="12"
@@ -231,7 +217,7 @@
                                    TextAlignment="Center"
                                    MaxLines="2"
                                    TextTrimming="CharacterEllipsis"/>
-                        
+
                         <Button x:Name="SaveButton"
                                 Click="SaveButton_Click"
                                 IsEnabled="False"
@@ -243,7 +229,7 @@
                                 <TextBlock Text="保存图片" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        
+
                         <Button x:Name="OpenFolderButton"
                                 Click="OpenFolderButton_Click"
                                 Style="{StaticResource OpenFolderButtonStyle}"
@@ -253,7 +239,7 @@
                                 <TextBlock Text="打开保存目录" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        
+
                         <TextBlock FontSize="12"
                                    Foreground="Gray"
                                    TextWrapping="Wrap"
@@ -268,10 +254,10 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 提示卡片容器 - 支持多卡片并发显示 -->
+                <!-- Toast容器 -->
                 <StackPanel x:Name="ToastContainer"
                             Orientation="Vertical"
-                            Spacing="8"/>
+                            Spacing="0"/>
             </StackPanel>
         </Grid>
     </Grid>
