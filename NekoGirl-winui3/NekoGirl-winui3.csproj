@@ -67,62 +67,25 @@
     <!-- 更新检查间隔: 0 (每次启动都检查) -->
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <DefaultLanguage>zh-cn</DefaultLanguage>
-    <ApplicationIcon>Assets\Neko_256x256.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\NekoIcon256x256.ico</ApplicationIcon>
   </PropertyGroup>
-
-  <!-- ============================================ -->
-  <!-- 移除项配置 (ItemGroup - None Remove) -->
-  <!-- ============================================ -->
-  <!-- 作用: 显式声明这些文件不被默认包含规则处理 -->
-  <ItemGroup>
-    <None Remove="Assets\icon_source_original.scale-400.png" />
-    <None Remove="Assets\Neko150x150Logo.scale-400.png" />
-    <None Remove="Assets\Neko310x310Logo.scale-400.png" />
-    <None Remove="Assets\Neko310x310Logo.targetsize-256.png" />
-    <None Remove="Assets\Neko71x71Logo.scale-400.png" />
-    <None Remove="Assets\Neko_1240x1240.png" />
-    <None Remove="Assets\Neko_1240x1240.scale-400.png" />
-    <None Remove="Assets\Neko_1240x600.png" />
-    <None Remove="Assets\Neko_1240x600.scale-200.png" />
-    <None Remove="Assets\Neko_1240x600.scale-400.png" />
-    <None Remove="Assets\Neko_200x200.scale-400.png" />
-    <None Remove="Assets\Neko_256x256.png" />
-    <None Remove="Assets\Neko_256x256.targetsize-256.png" />
-    <None Remove="Assets\Neko_284x284.png" />
-    <None Remove="Assets\Neko_284x284.scale-400.png" />
-    <None Remove="Assets\Neko_600x600.png" />
-    <None Remove="Assets\Neko_600x600.scale-400.png" />
-    <None Remove="Assets\Neko_96x96.scale-400.png" />
-  </ItemGroup>
 
   <!-- ============================================ -->
   <!-- 内容文件配置 (ItemGroup - Content) -->
   <!-- ============================================ -->
-  <!-- 作用: 将这些资源文件包含在输出中 -->
+  <!-- 作用: 将必需的资源文件包含在输出中 -->
   <ItemGroup>
-    <Content Include="Assets\Neko_256x256.ico" />
-    <Content Include="Assets\Neko_256x256.png" />
-    <Content Include="Assets\Neko_256x256.targetsize-256.png" />
-    <Content Include="Assets\Neko_96x96.png" />
-    <Content Include="Assets\Neko_96x96.scale-400.png" />
-    <Content Include="Assets\Neko_200x200.png" />
-    <Content Include="Assets\Neko_200x200.scale-400.png" />
-    <Content Include="Assets\Neko_284x284.png" />
-    <Content Include="Assets\Neko_284x284.scale-400.png" />
-    <Content Include="Assets\Neko_600x600.png" />
-    <Content Include="Assets\Neko_600x600.scale-400.png" />
-    <Content Include="Assets\Neko_1240x600.png" />
-    <Content Include="Assets\Neko_1240x600.scale-200.png" />
-    <Content Include="Assets\Neko_1240x600.scale-400.png" />
-    <Content Include="Assets\Neko_1240x1240.png" />
-    <Content Include="Assets\Neko_1240x1240.scale-400.png" />
+    <Content Include="Assets\NekoIcon256x256.ico" />
+    <Content Include="Assets\NekoIcon256x256.png" />
+    <Content Include="Assets\NekoStoreLogo96x96.png" />
+    <Content Include="Assets\NekoTileSmall96x96.png" />
+    <Content Include="Assets\NekoTileMedium200x200.png" />
+    <Content Include="Assets\NekoTileWide1240x600.png" />
+    <Content Include="Assets\NekoSplashScreen1240x600.png" />
   </ItemGroup>
 
-  <!-- ============================================ -->
-  <!-- 清单文件配置 (ItemGroup - Manifest) -->
-  <!-- ============================================ -->
   <ItemGroup>
-    <Manifest Include="$(ApplicationManifest)" />
+    <None Include="Package.appxmanifest" />
   </ItemGroup>
 
   <!-- ============================================ -->

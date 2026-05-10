@@ -54,17 +54,6 @@ public class ToastNotification
     }
 
     /// <summary>
-    /// 获取卡片在列表中的索引（用于计算位置）
-    /// </summary>
-    internal int GetCardIndex(ToastCard card)
-    {
-        lock (_lock)
-        {
-            return _activeCards.IndexOf(card);
-        }
-    }
-
-    /// <summary>
     /// 获取所有活动卡片（用于动画）
     /// </summary>
     internal List<ToastCard> GetActiveCards()

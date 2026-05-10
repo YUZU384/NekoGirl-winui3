@@ -1,21 +1,21 @@
-##
+## ============================================
 ## Visual Studio / .NET / WinUI 3
-##
+## ============================================
 
-# Build outputs
+## 构建输出
 bin/
 obj/
 AppPackages/
 BundleArtifacts/
 
-# Visual Studio cache/options
+## Visual Studio 缓存/选项
 .vs/
 *.user
 *.userosscache
 *.suo
 *.cache
 
-# Build results
+## 构建结果 (二进制文件)
 *.dll
 *.exe
 *.pdb
@@ -25,22 +25,53 @@ BundleArtifacts/
 *.msixbundle
 *.pri
 *.xbf
+*.winmd
 
-# NuGet
+## NuGet
 *.nupkg
 **/packages/*
 !**/packages/build/
 
-# Windows Store app package directories and files
+## Windows Store 应用包相关
 Package.StoreAssociation.xml
 *_TemporaryKey.pfx
 
-# Visual Studio cache files
+## Visual Studio 源代码管理
 *.[Cc]ache
 !?*.[Cc]ache/
-
-# Others
-*.log
 *.vspscc
 *.vssscc
-NekoGirl-winui3/Package.appxmanifest
+
+## 发布配置
+PublishProfiles/
+
+## 测试结果
+TestResults/
+
+## ============================================
+## 编辑器与IDE
+## ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+## ============================================
+## 系统文件
+## ============================================
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## ============================================
+## 日志与临时文件
+## ============================================
+*.log
+*.tmp
+*.temp

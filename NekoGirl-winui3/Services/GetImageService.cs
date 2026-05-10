@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 
 namespace NekoGirl_winui3.Services;
@@ -10,10 +12,21 @@ namespace NekoGirl_winui3.Services;
 /// </summary>
 public class GetImageService : IDisposable
 {
-    private static readonly HttpClient HttpClient = new()
+    private static readonly HttpClientHandler HttpClientHandler = new()
+    {
+        AllowAutoRedirect = true,
+        UseCookies = true,
+        CookieContainer = new CookieContainer(),
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+    };
+
+    private static readonly HttpClient HttpClient = new(HttpClientHandler)
     {
         Timeout = TimeSpan.FromSeconds(30)
     };
+
+    private static bool _sessionInitialized;
+    private static readonly SemaphoreSlim _sessionLock = new(1, 1);
 
     private readonly List<ImageData> _images = [];
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -23,7 +36,61 @@ public class GetImageService : IDisposable
 
     static GetImageService()
     {
-        HttpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        HttpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0");
+        HttpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
+        HttpClient.DefaultRequestHeaders.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
+        HttpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+        HttpClient.DefaultRequestHeaders.Add("Pragma", "no-cache");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
+        HttpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
+        HttpClient.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+    }
+
+    private static async Task EnsureSessionInitializedAsync()
+    {
+        if (_sessionInitialized) return;
+
+        await _sessionLock.WaitAsync();
+        try
+        {
+            if (_sessionInitialized) return;
+
+            try
+            {
+                Debug.WriteLine("[初始化] 正在建立nekos.best会话...");
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://nekos.best/");
+                request.Headers.Add("Referer", "https://www.google.com/");
+                request.Headers.Add("Origin", "https://nekos.best");
+
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
+
+                Debug.WriteLine($"[初始化] 会话建立完成，状态码: {response.StatusCode}");
+
+                var cookies = HttpClientHandler.CookieContainer.GetCookies(new Uri("https://nekos.best"));
+                foreach (Cookie cookie in cookies)
+                {
+                    Debug.WriteLine($"[Cookie] {cookie.Name}={cookie.Value}");
+                }
+
+                _sessionInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[初始化警告] 会话建立失败: {ex.Message}，将尝试继续...");
+                _sessionInitialized = true;
+            }
+        }
+        finally
+        {
+            _sessionLock.Release();
+        }
     }
 
     public async Task GetNextSetAsync(int count = 5)
@@ -33,6 +100,7 @@ public class GetImageService : IDisposable
         await _semaphore.WaitAsync();
         try
         {
+            await EnsureSessionInitializedAsync();
             await FetchMultipleImagesAsync(count);
         }
         finally
@@ -66,9 +134,11 @@ public class GetImageService : IDisposable
                 Debug.WriteLine($"[加载] {imageData.Url}");
 
                 byte[] imageBytes = await DownloadImageBytesAsync(imageData.Url);
+                
                 if (imageBytes.Length == 0)
                 {
-                    return null;
+                    Debug.WriteLine($"[降级] HTTP下载失败，尝试直接从URL加载...");
+                    return await LoadImageFromUrlDirectlyAsync(imageData.Url);
                 }
 
                 imageData.ImageBytes = imageBytes;
@@ -80,12 +150,28 @@ public class GetImageService : IDisposable
             catch (Exception ex)
             {
                 Debug.WriteLine($"[图片加载失败] {ex.Message}");
-                return null;
+                Debug.WriteLine($"[降级] 尝试直接从URL加载...");
+                return await LoadImageFromUrlDirectlyAsync(imageData.Url);
             }
         }
         finally
         {
             _semaphore.Release();
+        }
+    }
+
+    private static async Task<BitmapImage?> LoadImageFromUrlDirectlyAsync(string url)
+    {
+        try
+        {
+            var bitmap = new BitmapImage(new Uri(url));
+            await Task.Delay(100);
+            return bitmap;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[直接加载失败] {ex.Message}");
+            return null;
         }
     }
 
@@ -150,8 +236,23 @@ public class GetImageService : IDisposable
         {
             try
             {
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"https://nekos.best/api/v2/neko?amount={count}");
+                request.Headers.Add("Referer", "https://nekos.best/");
+                request.Headers.Add("Origin", "https://nekos.best");
+                request.Headers.Add("Accept", "application/json, text/plain, */*");
+                request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                string json = await HttpClient.GetStringAsync($"https://nekos.best/api/v2/neko?amount={count}", cts.Token);
+                var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
+
+                response.EnsureSuccessStatusCode();
+
+                byte[] jsonBytes = await response.Content.ReadAsByteArrayAsync(cts.Token);
+                
+                Debug.WriteLine($"[响应大小] {jsonBytes.Length} 字节");
+                Debug.WriteLine($"[前20字节] {BitConverter.ToString(jsonBytes.Take(Math.Min(20, jsonBytes.Length)).ToArray())}");
+                
+                string json = Encoding.UTF8.GetString(jsonBytes);
 
                 Debug.WriteLine($"[API响应] {json.Substring(0, Math.Min(200, json.Length))}...");
 
@@ -180,10 +281,22 @@ public class GetImageService : IDisposable
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Forbidden)
             {
-                Debug.WriteLine($"[403错误] 尝试 {attempt + 1}/3");
+                Debug.WriteLine($"[API 403错误] 尝试 {attempt + 1}/3");
                 if (attempt < 2)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
+
+                    await _sessionLock.WaitAsync();
+                    try
+                    {
+                        _sessionInitialized = false;
+                    }
+                    finally
+                    {
+                        _sessionLock.Release();
+                    }
+
+                    await EnsureSessionInitializedAsync();
                 }
             }
             catch (Exception ex)
@@ -203,8 +316,54 @@ public class GetImageService : IDisposable
         {
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                return await HttpClient.GetByteArrayAsync(url, cts.Token);
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0");
+                request.Headers.Add("Referer", "https://nekos.best/");
+                request.Headers.Add("Origin", "https://nekos.best");
+                request.Headers.Add("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+                request.Headers.Add("Sec-Fetch-Dest", "image");
+                request.Headers.Add("Sec-Fetch-Mode", "no-cors");
+                request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
+
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Forbidden)
+            {
+                Debug.WriteLine($"[图片下载403] 尝试 {attempt + 1}/{maxRetries}: {url}");
+
+                if (attempt == 1)
+                {
+                    Debug.WriteLine("[重置会话] 尝试重新建立会话...");
+                    await _sessionLock.WaitAsync();
+                    try
+                    {
+                        _sessionInitialized = false;
+                        HttpClientHandler.CookieContainer = new CookieContainer();
+                    }
+                    finally
+                    {
+                        _sessionLock.Release();
+                    }
+                    await EnsureSessionInitializedAsync();
+                }
+
+                if (attempt < maxRetries - 1)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine($"[下载超时] 尝试 {attempt + 1}/{maxRetries} (60秒超时)");
+                if (attempt < maxRetries - 1)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
             }
             catch (Exception ex)
             {
