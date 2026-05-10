@@ -1,7 +1,7 @@
 # NekoGirl - 猫娘图片浏览器
 
 <p align="center">
-  <img src="NekoGirl-winui3/Assets/Neko_256x256.png" alt="NekoGirl Logo" width="128">
+  <img src="NekoGirl-winui3/Assets/NekoIcon256x256.png" alt="NekoGirl Logo" width="128">
 </p>
 
 <p align="center">
