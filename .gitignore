@@ -35,6 +35,7 @@ BundleArtifacts/
 ## Windows Store 应用包相关
 Package.StoreAssociation.xml
 *_TemporaryKey.pfx
+**/Package.appxmanifest
 
 ## Visual Studio 源代码管理
 *.[Cc]ache
@@ -44,6 +45,7 @@ Package.StoreAssociation.xml
 
 ## 发布配置
 PublishProfiles/
+**/Properties/PublishProfiles/
 
 ## 测试结果
 TestResults/

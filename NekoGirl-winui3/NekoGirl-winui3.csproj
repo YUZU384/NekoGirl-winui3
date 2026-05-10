@@ -61,8 +61,8 @@
     <!-- MSIX包捆绑方式: Always (总是生成捆绑包) -->
     <AppxBundle>Always</AppxBundle>
     
-    <!-- MSIX包捆绑目标平台: x64和ARM64 -->
-    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <!-- MSIX包捆绑|x64|arm64</AppxBundlePlatforms>目标平台: x86+x64+arm64 -->
+	<AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
     
     <!-- 更新检查间隔: 0 (每次启动都检查) -->
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
